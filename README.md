@@ -89,7 +89,7 @@ Then, to install the drivers, run this command in the same directory:
 
     sudo make install
 
-Note that if you built and installed the drivers this way, you will need to
+Note that if you have built and installed the drivers this way, you will need to
 run `make clean` in the source directory, and then redo the above, after each
 kernel upgrade.
 
@@ -111,51 +111,6 @@ couldn't find the key to sign with. This does not interfere with module
 installation and operation and can safely be ignored. That is, unless you set
 up module signature verification, but then you would recognize the problem,
 and would be able to fix it.
-
-### DKMS issues preventing correct installation ###
-
-If you're installing Debian packages, or installing from source with DKMS, you
-might hit one of DKMS bugs which prevent some of the driver modules from
-installing.
-
-They make DKMS produce messages like this:
-
-    hid-uclogic.ko:
-    Running module version sanity check.
-    Error! Module version 7 for hid-uclogic.ko
-    is not newer than what is already found in kernel 4.9.0-5-amd64 (7).
-    You may override by specifying --force.
-
-or this:
-
-    hid-uclogic.ko.xz:
-    Running module version sanity check.
-    Error! Module version 9 for hid-uclogic.ko.xz
-    is not newer than what is already found in kernel 3.10.0-862.14.4.el7.x86_64 (27A2028780DCB320780F53D).
-
-while trying to install the drivers.
-
-Fixes for these were accepted upstream ([first fix][dkms_issue1_pr] and
-[second fix][dkms_issue2_pr]) and should eventually appear in distributions.
-Meanwhile, to fix the issues, you can apply these yourself, or execute the
-following command:
-
-    sudo sed -i \
-             -e '/^get_module_verinfo()/,+3 s/\<unset res$\|\<res=()$/res=("" "" "")/' \
-	     /usr/sbin/dkms
-
-Be aware that the operation of the above command is inexact, and might not
-work, or might break DKMS. You've been warned. In any case, simply reinstall
-DKMS to restore it.
-
-### Systems with Secure Boot enabled ###
-
-If your system has [Secure Boot][secure_boot] enabled, then the installed
-driver modules won't be permitted to load. You will see messages like
-"Required key not available". To make them work, you will need to sign them,
-or disable Secure Boot entirely. See documentation for your Linux distribution
-on how to sign kernel modules, or documentation for your computer's UEFI
-firmware on how to disable Secure Boot.
 
 Configuration
 -------------
@@ -299,6 +254,60 @@ directory:
 
 The resulting package files will be written to the parent directory.
 
+Known issues
+------------
+
+### DKMS issues preventing correct installation ###
+
+If you're installing Debian packages, or installing from source with DKMS, you
+might hit one of DKMS bugs which prevent some of the driver modules from
+installing.
+
+They make DKMS produce messages like this:
+
+    hid-uclogic.ko:
+    Running module version sanity check.
+    Error! Module version 7 for hid-uclogic.ko
+    is not newer than what is already found in kernel 4.9.0-5-amd64 (7).
+    You may override by specifying --force.
+
+or this:
+
+    hid-uclogic.ko.xz:
+    Running module version sanity check.
+    Error! Module version 9 for hid-uclogic.ko.xz
+    is not newer than what is already found in kernel 3.10.0-862.14.4.el7.x86_64 (27A2028780DCB320780F53D).
+
+while trying to install the drivers.
+
+Fixes for these were accepted upstream ([first fix][dkms_issue1_pr] and
+[second fix][dkms_issue2_pr]) and should eventually appear in distributions.
+Meanwhile, to fix the issues, you can apply these yourself, or execute the
+following command:
+
+    sudo sed -i \
+             -e '/^get_module_verinfo()/,+3 s/\<unset res$\|\<res=()$/res=("" "" "")/' \
+             /usr/sbin/dkms
+
+Be aware that the operation of the above command is inexact, and might not
+work, or might break DKMS. You've been warned. In any case, simply reinstall
+DKMS to restore it.
+
+### Systems with Secure Boot enabled ###
+
+If your system has [Secure Boot][secure_boot] enabled, then the installed
+driver modules won't be permitted to load. You will see messages like
+"Required key not available". To make them work, you will need to sign them,
+or disable Secure Boot entirely. See documentation for your Linux distribution
+on how to sign kernel modules, or documentation for your computer's UEFI
+firmware on how to disable Secure Boot.
+
+### Touch ring/strip scrolling doesn't work in Gnome ###
+
+Scrolling with a touch ring or a touch strip [doesn't
+work][gnome_touch_scroll_issue] in Gnome version 3.24 and later. At the moment
+there doesn't seem to be a workaround beside not using Gnome.
+
 Support
 -------
 
@@ -311,7 +320,7 @@ yet, leave a thumbs-up :thumbsup: reaction on the first post in the issue.
 This will let developers identify popular issues and pick them first for
 solving!
 
-Join the [#DIGImend channel on irc.freenode.net][irc_channel] to discuss the
+Join the [#DIGImend channel on irc.libera.chat][irc_channel] to discuss the
 drivers, tablets, development, to ask for help, and to help others!
 
 [travis_ci_badge]: https://travis-ci.org/DIGImend/digimend-kernel-drivers.svg?branch=master
@@ -329,4 +338,5 @@ drivers, tablets, development, to ask for help, and to help others!
 [xsetwacom_manpage]: https://www.mankier.com/1/xsetwacom
 [howtos]: http://digimend.github.io/support/
 [issues]: https://github.com/DIGImend/digimend-kernel-drivers/issues
-[irc_channel]: https://webchat.freenode.net/?channels=DIGImend
+[irc_channel]: https://web.libera.chat/#DIGImend
+[gnome_touch_scroll_issue]: https://gitlab.gnome.org/GNOME/gnome-control-center/issues/118
